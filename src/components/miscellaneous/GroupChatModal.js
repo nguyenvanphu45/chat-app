@@ -1,7 +1,6 @@
 import { Box, Button, FormControl, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure, useToast } from '@chakra-ui/react'
 import React, { useState } from 'react'
 import { ChatState } from '../../Context/ChatProvider';
-import { getSearch } from '../../services/userServices';
 import UserBadgeItem from '../userAvatar/UserBadgeItem';
 import UserListItem from '../userAvatar/UserListItem';
 import axios from 'axios'
@@ -20,15 +19,22 @@ const GroupChatModal = ({ children }) => {
     const handleSearch = async (query) => {
         setSearch(query)
         if (!query) {
+            setSearchResult()
             return
         }
 
         try {
             setLoading(true)
 
-            let data = await getSearch(search)
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+
+            const { data } = await axios.get(`/api/user?search=${search}`, config);
             setLoading(false)
-            setSearchResult(data.data)
+            setSearchResult(data)
         } catch (error) {
             toast({
                 title: 'Error Occured!',
@@ -60,7 +66,6 @@ const GroupChatModal = ({ children }) => {
                     user: JSON.stringify(selectedUsers.map((u) => u._id))
                 }
             )
-            console.log(">>> check data: ", data.data)
             setChats([data.data, ...chats])
             onClose()
             toast({

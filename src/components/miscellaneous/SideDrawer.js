@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import ProfileModal from './ProfileModal'
 import { ChatState } from '../../Context/ChatProvider'
 import { useHistory } from 'react-router-dom'
-import { getSearch, handleChat } from '../../services/userServices'
+import axios from 'axios'
 import ChatLoading from '../ChatLoading'
 import UserListItem from '../userAvatar/UserListItem'
 
@@ -41,10 +41,16 @@ const SideDrawer = () => {
         try {
             setLoading(true)
 
-            let data = await getSearch(search)
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+
+            const { data } = await axios.get(`/api/user?search=${search}`, config);
+
             setLoading(false)
-            setSearchResult(data.data)
-            return
+            setSearchResult(data)
         } catch (error) {
             toast({
                 title: 'Error Occured!',
@@ -61,7 +67,15 @@ const SideDrawer = () => {
         try {
             setLoading(true)
     
-            let { data } = await handleChat(userId)
+            const config = {
+                headers: {
+                    "Content-type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+
+            const { data } = await axios.post(`/api/chat`, { userId }, config);
+
             if(!chats.find((c) => c._id === data._id)) {
                 setChats([data, ...chats])
             }
@@ -95,7 +109,7 @@ const SideDrawer = () => {
                 <Tooltip label='Search Users to chat' hasArrow placement='bottom-end'>
                     <Button variant='ghost' onClick={onOpen}>
                         <i className='fas fa-search'></i>
-                        <Text d={{ base: "none", md: "flex" }} px='4'>
+                        <Text display={{ base: "none", md: "flex" }} px='4'>
                             Search user
                         </Text>
                     </Button>
@@ -111,7 +125,7 @@ const SideDrawer = () => {
                     </Menu>
                     <Menu>
                         <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
-                            <Avatar size='sm' cursor='pointer' />
+                            <Avatar size='sm' cursor='pointer' name={user.name} src={user.pic} />
                         </MenuButton>
                         <MenuList>
                             <ProfileModal user={user}>

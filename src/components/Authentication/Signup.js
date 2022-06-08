@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, FormControl, FormLabel, Input, InputGroup, InputRightElement, VStack, useToast } 
     from '@chakra-ui/react'
-import { handleRegister } from '../../services/userServices'
+import axios from 'axios'
 import { useHistory } from 'react-router-dom'
 
 const Signup = () => {
@@ -11,7 +11,8 @@ const Signup = () => {
     const [ confirmpassword, setConfirmpassword ] = useState()
     const [ pic, setPic ] = useState()
     const [ show, setShow ] = useState(false)
-    const [loading, setLoading] = useState(false)
+    const [picLoading, setPicLoading] = useState(false);
+
     const toast = useToast()
     const history = useHistory()
 
@@ -20,7 +21,7 @@ const Signup = () => {
     }
 
     const postDetails = (pics) => {
-        setLoading(true)
+        setPicLoading(true)
         if (pics === undefined) {
             toast({
                 title: 'Please select an image!',
@@ -42,11 +43,11 @@ const Signup = () => {
             }).then((res) => res.json())
             .then(data => {
                 setPic(data.url.toString())
-                setLoading(false)
+                setPicLoading(false)
             })
             .catch((err) => {
                 console.log(err)
-                setLoading(false)
+                setPicLoading(false)
             })
         } else {
             toast({
@@ -56,13 +57,13 @@ const Signup = () => {
                 isClosable: true,
                 position: "bottom-right"
             })
-            setLoading(false)
+            setPicLoading(false)
             return
         }
     }
 
     const submitHandler = async () => {
-        setLoading(true)
+        setPicLoading(true)
         if (!name || !email || !password || !confirmpassword) {
             toast({
                 title: 'Please fill all the Feilds!',
@@ -71,37 +72,42 @@ const Signup = () => {
                 isClosable: true,
                 position: "bottom-right"
             })
-            setLoading(false)
+            setPicLoading(false);
             return; 
         }
 
+        if (password !== confirmpassword) {
+            toast({
+                title: "Passwords Do Not Match",
+                status: "warning",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom",
+            });
+            return;
+        }
+
         try {
-            let data = await handleRegister(name, email, password)
+            const config = {
+                headers: {
+                "Content-type": "application/json",
+                },
+            };
 
-            if (data && data.data.errCode !== 0) {
-                toast({
-                    title: 'User already exist!',
-                    status: 'error',
-                    duration: '5000',
-                    isClosable: true,
-                    position: "bottom-right"
-                })
-                setLoading(false)
-                return
-            }
+            const { data } = await axios.post("/api/user/register", {name, email, password, pic}, config);
 
-            if (data && data.data.errCode === 0) {
-                toast({
-                    title: 'Registration Successful!',
-                    status: 'success',
-                    duration: '5000',
-                    isClosable: true,
-                    position: "bottom-right"
-                })
-                localStorage.setItem("userInfo", JSON.stringify(data))
-                setLoading(false)
-                history.push('./chats')
-            }
+            console.log('>>> check data: ', data)
+
+            toast({
+                title: 'Registration Successful!',
+                status: 'success',
+                duration: '5000',
+                isClosable: true,
+                position: "bottom-right"
+            })
+            localStorage.setItem("userInfo", JSON.stringify(data))
+            setPicLoading(false);
+            history.push('./chats')
         } catch (error) {
             toast({
                 title: 'Error Occured!',
@@ -111,7 +117,7 @@ const Signup = () => {
                 isClosable: true,
                 position: "bottom-right"
             })
-            setLoading(false)
+            setPicLoading(false);
         }
     }
 
@@ -176,7 +182,7 @@ const Signup = () => {
                 width="100%"
                 style={{ marginTop: 15 }}                
                 onClick={submitHandler}
-                isLoading={loading}
+                isLoading={picLoading}
             >
                 Sign up
             </Button>

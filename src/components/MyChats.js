@@ -2,7 +2,7 @@ import { AddIcon } from '@chakra-ui/icons'
 import { Box, Button, Stack, Text, useToast } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
 import { ChatState } from '../Context/ChatProvider'
-import { getChat } from '../services/userServices'
+import axios from 'axios'
 import ChatLoading from './ChatLoading'
 import { getSender } from '../config/ChatLogics'
 import GroupChatModal from './miscellaneous/GroupChatModal'
@@ -14,8 +14,14 @@ const MyChats = ({ fetchAgain }) => {
     const toast = useToast()
 
     const fetchChats = async () => {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${user.token}`,
+            },
+        };
+
         try {
-            let {data} = await getChat()
+            const { data } = await axios.get("/api/chat", config);
             setChats(data)
         } catch (error) {
             toast({
@@ -79,7 +85,6 @@ const MyChats = ({ fetchAgain }) => {
                 {chats ? (
                     <Stack overflow='scroll'>
                         {chats.map((chat) => (
-                            // console.log('>>> check: ', chat._id)
                             <Box
                                 onClick={() => setSelectedChat(chat)}
                                 cursor="pointer"

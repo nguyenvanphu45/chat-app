@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, FormControl, FormLabel, Input, InputGroup, InputRightElement, useToast, VStack } from '@chakra-ui/react'
 import { useHistory } from 'react-router-dom'
-import { handleLogin } from '../../services/userServices'
+import axios from 'axios'
 
 const Login = () => {
     const [ email, setEmail ] = useState()
@@ -30,33 +30,24 @@ const Login = () => {
         }
 
         try {
-            let data = await handleLogin(email, password)
+            const config = {
+                headers: {
+                    "Content-type": "application/json",
+                },
+            };
 
-            if (data && data.data.errCode !== 0) {
-                toast({
-                    title: 'Login Fail!',
-                    status: 'error',
-                    duration: '5000',
-                    isClosable: true,
-                    position: "bottom-right"
-                })
-                setLoading(false)
-                return
-            }
+            const { data } = await axios.post("/api/user/login", { email, password }, config);
 
-            if (data && data.data.errCode === 0) {
-                toast({
-                    title: 'Login Success!',
-                    status: 'success',
-                    duration: '5000',
-                    isClosable: true,
-                    position: "bottom-right"
-                })
-                localStorage.setItem("userInfo", JSON.stringify(data))
-                setLoading(false)
-                history.push('./chats')
-                return
-            }
+            toast({
+                title: 'Login Success!',
+                status: 'success',
+                duration: '5000',
+                isClosable: true,
+                position: "bottom-right"
+            })
+            localStorage.setItem("userInfo", JSON.stringify(data));
+            setLoading(false)
+            history.push('./chats')
         } catch (error) {
             toast({
                 title: 'Error Occured!',
