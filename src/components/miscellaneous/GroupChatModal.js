@@ -50,23 +50,31 @@ const GroupChatModal = ({ children }) => {
     const handleSubmit = async () => {
         if (!groupChatName || !selectedUsers) {
             toast({
-                title: 'Please fill all the fields!',
-                status: 'warning',
-                duration: '5000',
+                title: "Please fill all the feilds",
+                status: "warning",
+                duration: 5000,
                 isClosable: true,
-                position: "bottom-right"
-            })
+                position: "top",
+            });
+            return;
         }
 
         try {
-            let data = await axios.post(
-                "/api/chat/groups",
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+
+            const { data } = await axios.post(
+                `/api/chat/group`,
                 {
                     name: groupChatName,
-                    user: JSON.stringify(selectedUsers.map((u) => u._id))
-                }
-            )
-            setChats([data.data, ...chats])
+                    users: JSON.stringify(selectedUsers.map((u) => u._id)),
+                },
+                config
+            );
+            setChats([data, ...chats])
             onClose()
             toast({
                 title: 'New group chat created!',
@@ -78,7 +86,7 @@ const GroupChatModal = ({ children }) => {
         } catch (error) {
             toast({
                 title: 'Failed to Create the chat!',
-                description:  error.respone.data,
+                description: error.response.data,
                 status: 'error',
                 duration: '5000',
                 isClosable: true,

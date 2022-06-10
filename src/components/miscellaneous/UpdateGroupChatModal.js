@@ -24,10 +24,20 @@ const UpdateGroupChatModal = ({  fetchMessages, fetchAgain, setFetchAgain }) => 
         try {
             setRenameLoading(true)
 
-            let { data } = await axios.put("/api/chat/rename", {
-                chatId: selectedChat._id,
-                chatName: groupChatName
-            })
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+
+            const { data } = await axios.put(
+                `/api/chat/rename`,
+                {
+                    chatId: selectedChat._id,
+                    chatName: groupChatName,
+                },
+                config
+            );
 
             setSelectedChat(data)
             setFetchAgain(!fetchAgain)
@@ -139,13 +149,21 @@ const UpdateGroupChatModal = ({  fetchMessages, fetchAgain, setFetchAgain }) => 
         }
 
         try {
-            const { data } = await axios.put(`/api/chat/groupremove`,
+            setLoading(true);
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+            const { data } = await axios.put(
+                `/api/chat/groupremove`,    
                 {
                     chatId: selectedChat._id,
-                    userId: user1._id
-                }
-            )
-            user1._id === user._id ? setSelectedChat() : setSelectedChat(data)
+                    userId: user1._id,
+                },
+                config
+            );
+            user1._id === user._id ? setSelectedChat() : setSelectedChat(data);
             setFetchAgain(!fetchAgain)
             fetchMessages()
             setLoading(false)
